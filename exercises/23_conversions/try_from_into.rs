@@ -28,14 +28,25 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
 
-    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {}
+    fn try_from((red, green, blue): (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let red = u8::try_from(red).map_err(|_| IntoColorError::IntConversion)?;
+        let green = u8::try_from(green).or(Err(IntoColorError::IntConversion))?;
+        let blue = u8::try_from(blue).or(Err(IntoColorError::IntConversion))?;
+
+        Ok(Color { red, green, blue })
+    }
 }
 
 // TODO: Array implementation.
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
 
-    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {}
+    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let red = u8::try_from(arr[0]).or(Err(IntoColorError::IntConversion))?;
+        let green = u8::try_from(arr[1]).or(Err(IntoColorError::IntConversion))?;
+        let blue = u8::try_from(arr[2]).or(Err(IntoColorError::IntConversion))?;
+        Ok(Color { red, green, blue })
+    }
 }
 
 // TODO: Slice implementation.
@@ -43,7 +54,16 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
 
-    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {}
+    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        if slice.len() != 3 {
+            Err(IntoColorError::BadLen)
+        } else {
+            let red = u8::try_from(slice[0]).or(Err(IntoColorError::IntConversion))?;
+            let green = u8::try_from(slice[1]).or(Err(IntoColorError::IntConversion))?;
+            let blue = u8::try_from(slice[2]).or(Err(IntoColorError::IntConversion))?;
+            Ok(Color { red, green, blue })
+        }
+    }
 }
 
 fn main() {
@@ -174,4 +194,12 @@ mod tests {
         let v = vec![0, 0];
         assert_eq!(Color::try_from(&v[..]), Err(BadLen));
     }
+}
+
+fn foo() {
+    let x = vec![1, 2, 3];
+    let y = String::from("hello");
+
+    let x2 = x.clone(); // impl Clone for Vec<T>
+    let y2 = y.clone(); // impl Clone for String
 }

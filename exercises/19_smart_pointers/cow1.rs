@@ -1,3 +1,5 @@
+// Review
+
 // This exercise explores the `Cow` (Clone-On-Write) smart pointer. It can
 // enclose and provide immutable access to borrowed data and clone the data
 // lazily when mutation or ownership is required. The type is designed to work
@@ -39,7 +41,7 @@ mod tests {
         let mut input = Cow::from(&vec);
         abs_all(&mut input);
         // TODO: Replace `todo!()` with `Cow::Owned(_)` or `Cow::Borrowed(_)`.
-        assert!(matches!(input, todo!()));
+        assert!(matches!(input, Cow::Borrowed(_)));
     }
 
     #[test]
@@ -52,7 +54,7 @@ mod tests {
         let mut input = Cow::from(vec);
         abs_all(&mut input);
         // TODO: Replace `todo!()` with `Cow::Owned(_)` or `Cow::Borrowed(_)`.
-        assert!(matches!(input, todo!()));
+        assert!(matches!(input, Cow::Owned(_)));
     }
 
     #[test]
@@ -64,6 +66,33 @@ mod tests {
         let mut input = Cow::from(vec);
         abs_all(&mut input);
         // TODO: Replace `todo!()` with `Cow::Owned(_)` or `Cow::Borrowed(_)`.
-        assert!(matches!(input, todo!()));
+        assert!(matches!(input, Cow::Owned(_)));
+    }
+}
+
+enum MyCowStr<'a> {
+    Borrowed(&'a String),
+    Owned(String),
+}
+
+impl MyCowStr<'_> {
+    /// my_cow.len()  - provided by [`core::ops::Deref`] trait
+    fn get_ref_str(&self) -> &str {
+        match self {
+            MyCowStr::Borrowed(x) => x,
+            MyCowStr::Owned(y) => y,
+        }
+    }
+
+    fn to_mut(&mut self) -> &mut String {
+        match self {
+            MyCowStr::Borrowed(x) => {
+                *self = MyCowStr::Owned(x.clone());
+                let MyCowStr::Owned(x) = self else {panic!()};
+                x
+            },
+            MyCowStr::Owned(y) => y,
+        }
+
     }
 }
